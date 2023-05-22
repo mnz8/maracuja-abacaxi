@@ -16,16 +16,20 @@ fn encrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
     if let Some(files_vec) = files {
         for file_path in &files_vec {
             let mut build_location = String::new();
-            match folder {
-                Some(ref folder_path) => {
-                    build_location.clear();
-                    build_location.push_str(&folder_path);
-                }
-                None => {}
-            }
 
             let path = Path::new(file_path);
             let parent = path.parent().and_then(|value| value.to_str());
+
+            // 不设置文件夹，使用文件父路径
+            if let Some(parent_path) = parent {
+                build_location.clear();
+                build_location.push_str(parent_path);
+            }
+
+            if let Some(ref folder_path) = folder {
+                build_location.clear();
+                build_location.push_str(folder_path);
+            }
 
             let file_stem_option = path.file_stem().and_then(|value| value.to_str());
             let mut file_stem = String::new();
@@ -41,21 +45,10 @@ fn encrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
                 extension.push_str(extension_str);
             };
 
-            match parent {
-                Some(ref parent_path) => {
-                    build_location.clear();
-                    build_location.push_str(&parent_path);
-                }
-                None => {}
-            }
-
             let out_file_path = Path::new(&build_location);
             let now = get_now();
             let out_file_name = format!("{now}encryptout{file_stem}{extension}");
-            let complete_path_option = out_file_path
-                .join(out_file_name)
-                .into_os_string()
-                .into_string();
+            let complete_path_option = out_file_path.join(out_file_name).into_os_string().into_string();
 
             let mut complete_path = String::new();
             if let Ok(complete_path_str) = complete_path_option {
@@ -67,7 +60,7 @@ fn encrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
         }
     }
 
-    return String::from("null");
+    String::from("null")
 }
 
 #[tauri::command]
@@ -75,12 +68,9 @@ fn decrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
     if let Some(files_vec) = files {
         for file_path in &files_vec {
             let mut build_location = String::new();
-            match folder {
-                Some(ref folder_path) => {
-                    build_location.clear();
-                    build_location.push_str(&folder_path);
-                }
-                None => {}
+            if let Some(ref folder_path) = folder {
+                build_location.clear();
+                build_location.push_str(folder_path);
             }
 
             let path = Path::new(file_path);
@@ -100,21 +90,15 @@ fn decrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
                 extension.push_str(extension_str);
             };
 
-            match parent {
-                Some(ref parent_path) => {
-                    build_location.clear();
-                    build_location.push_str(&parent_path);
-                }
-                None => {}
+            if let Some(parent_path) = parent {
+                build_location.clear();
+                build_location.push_str(parent_path);
             }
 
             let out_file_path = Path::new(&build_location);
             let now = get_now();
             let out_file_name = format!("{now}decryptout{file_stem}{extension}");
-            let complete_path_option = out_file_path
-                .join(out_file_name)
-                .into_os_string()
-                .into_string();
+            let complete_path_option = out_file_path.join(out_file_name).into_os_string().into_string();
 
             let mut complete_path = String::new();
             if let Ok(complete_path_str) = complete_path_option {
@@ -126,7 +110,7 @@ fn decrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
         }
     }
 
-    return String::from("null");
+    String::from("null")
 }
 
 // use same_file::Handle;

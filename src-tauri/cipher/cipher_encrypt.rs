@@ -19,13 +19,7 @@ fn aes256_cbc_encrypt(data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, Sym
     loop {
         let result = encryptor.encrypt(&mut read_buffer, &mut write_buffer, true)?;
 
-        final_result.extend(
-            write_buffer
-                .take_read_buffer()
-                .take_remaining()
-                .iter()
-                .map(|&i| i),
-        );
+        final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().copied());
 
         match result {
             BufferResult::BufferUnderflow => break,
@@ -65,14 +59,12 @@ pub fn encrypt_core(message: &[u8], key: &str) -> Vec<u8> {
     // make sure we'll have a slice big enough for base64 + padding
     ciphertext_base64_bytes.resize(encrypted_data.len() * 4 / 3 + 4, 0);
 
-    let bytes_written = general_purpose::STANDARD
-        .encode_slice(encrypted_data, &mut ciphertext_base64_bytes)
-        .unwrap();
+    let bytes_written = general_purpose::STANDARD.encode_slice(encrypted_data, &mut ciphertext_base64_bytes).unwrap();
 
     // shorten our vec down to just what was written
     ciphertext_base64_bytes.truncate(bytes_written);
 
-    return ciphertext_base64_bytes;
+    ciphertext_base64_bytes
 }
 
 pub fn encrypt_string(message: &str, key: &str) -> String {
@@ -81,21 +73,21 @@ pub fn encrypt_string(message: &str, key: &str) -> String {
     if let Ok(ok) = String::from_utf8(result_bytes) {
         return ok;
     }
-    return String::from("Invalid UTF8");
+    String::from("Invalid UTF8")
 }
 
 use std::fs::{self, write, File};
 use std::io::Read;
 
 pub fn encrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
-    if let Ok(mut f) = File::open(&path) {
-        if let Ok(metadata) = fs::metadata(&path) {
+    if let Ok(mut f) = File::open(path) {
+        if let Ok(metadata) = fs::metadata(path) {
             let mut buffer = vec![0; metadata.len() as usize];
 
-            if let Ok(_) = f.read(&mut buffer) {
+            if f.read(&mut buffer).is_ok() {
                 let result_bytes = encrypt_core(&buffer, key);
 
-                if let Ok(_) = write(out_file, &result_bytes) {
+                if write(out_file, result_bytes).is_ok() {
                     return None;
                 }
                 return Some(String::from("write fail"));
@@ -104,5 +96,5 @@ pub fn encrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
         }
         return Some(String::from("unable to read metadata"));
     }
-    return Some(String::from("no file found"));
+    Some(String::from("no file found"))
 }

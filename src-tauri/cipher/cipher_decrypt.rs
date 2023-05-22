@@ -8,11 +8,7 @@ use crypto::{
     symmetriccipher::SymmetricCipherError,
 };
 
-fn aes256_cbc_decrypt(
-    encrypted_data: &[u8],
-    key: &[u8],
-    iv: &[u8],
-) -> Result<Vec<u8>, SymmetricCipherError> {
+fn aes256_cbc_decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, SymmetricCipherError> {
     let mut decryptor = cbc_decryptor(KeySize256, key, iv, blockmodes::PkcsPadding);
 
     let mut final_result = Vec::<u8>::new();
@@ -22,13 +18,7 @@ fn aes256_cbc_decrypt(
 
     loop {
         let result = decryptor.decrypt(&mut read_buffer, &mut write_buffer, true)?;
-        final_result.extend(
-            write_buffer
-                .take_read_buffer()
-                .take_remaining()
-                .iter()
-                .map(|&i| i),
-        );
+        final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().copied());
         match result {
             BufferResult::BufferUnderflow => break,
             BufferResult::BufferOverflow => {}
@@ -65,12 +55,10 @@ pub fn decrypt_core(message: &[u8], key: &str) -> Vec<u8> {
 
     let decrypted_result = aes256_cbc_decrypt(&message_decode_base64[..], &aes_key, &aes_iv);
 
-    let decrypted_bytes = match decrypted_result {
+    match decrypted_result {
         Ok(ok) => ok,
-        Err(_error) => return String::from("decrypt error, code 3").into_bytes(),
-    };
-
-    return decrypted_bytes;
+        Err(_error) => String::from("decrypt error, code 3").into_bytes(),
+    }
 }
 
 pub fn decrypt_string(message: &str, key: &str) -> String {
@@ -79,21 +67,21 @@ pub fn decrypt_string(message: &str, key: &str) -> String {
     if let Ok(ok) = String::from_utf8(result_bytes) {
         return ok;
     }
-    return String::from("decrypt error, code 4");
+    String::from("decrypt error, code 4")
 }
 
 use std::fs::{self, write, File};
 use std::io::Read;
 
 pub fn decrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
-    if let Ok(mut f) = File::open(&path) {
-        if let Ok(metadata) = fs::metadata(&path) {
+    if let Ok(mut f) = File::open(path) {
+        if let Ok(metadata) = fs::metadata(path) {
             let mut buffer = vec![0; metadata.len() as usize];
 
-            if let Ok(_) = f.read(&mut buffer) {
+            if f.read(&mut buffer).is_ok() {
                 let result_bytes = decrypt_core(&buffer, key);
 
-                if let Ok(_) = write(out_file, &result_bytes) {
+                if write(out_file, result_bytes).is_ok() {
                     return None;
                 }
                 return Some(String::from("write fail"));
@@ -102,5 +90,5 @@ pub fn decrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
         }
         return Some(String::from("unable to read metadata"));
     }
-    return Some(String::from("no file found"));
+    Some(String::from("no file found"))
 }
