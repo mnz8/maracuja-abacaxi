@@ -16,18 +16,14 @@
 	}
 
 	async function e() {
-		console.log('files', files);
-		console.log('folder', folder);
 		let a = await invoke('encrypt_files', { files, folder });
-		console.log('e', a);
 	}
 
 	async function d() {
-		console.log('files', files);
-		console.log('folder', folder);
 		let a = await invoke('decrypt_files', { files, folder });
-		console.log('d', a);
 	}
+
+	$: folder_path = (folder as string) || '默认为文件所在路径';
 </script>
 
 <div class="container">
@@ -41,7 +37,7 @@
 				variant="gradient"
 				gradient={{ from: 'teal', to: 'green', deg: 105 }}
 			>
-				打开文件
+				选择文件
 			</Button>
 			<Button
 				on:click={() => {
@@ -63,17 +59,28 @@
 			</Button>
 		</Group>
 	</div>
+	<SavePathDisplay text={folder_path} />
 	<div class="row row-3">
-		<SavePathDisplay />
-		<Button
-			on:click={() => {
-				open_folder();
-			}}
-			variant="gradient"
-			gradient={{ from: 'teal', to: 'blue', deg: 60 }}
-		>
-			设置保存文件路径
-		</Button>
+		<Group>
+			<Button
+				on:click={() => {
+					open_folder();
+				}}
+				variant="gradient"
+				gradient={{ from: 'teal', to: 'blue', deg: 60 }}
+			>
+				设置保存路径
+			</Button>
+			<Button
+				on:click={() => {
+					folder = null;
+				}}
+				variant="gradient"
+				gradient={{ from: 'violet', to: 'indigo', deg: 60 }}
+			>
+				恢复默认路径
+			</Button>
+		</Group>
 	</div>
 </div>
 
