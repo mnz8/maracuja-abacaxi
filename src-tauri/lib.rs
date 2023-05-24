@@ -10,8 +10,12 @@ pub use cipher_decrypt::decrypt_string;
 pub use cipher_encrypt::encrypt_core;
 pub use cipher_encrypt::encrypt_file;
 pub use cipher_encrypt::encrypt_string;
+pub use cipher_encrypt::split_encrypt_file;
 
 #[path = "tool.rs"]
 pub mod tool;
 
 pub use tool::get_now;
+
+// 32
+pub const BYTE_BLOCK_SIZE: usize = 1024 * 1024;

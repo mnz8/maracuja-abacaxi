@@ -73,7 +73,7 @@ pub fn decrypt_string(message: &str, key: &str) -> String {
 use std::fs::{self, write, File};
 use std::io::Read;
 
-pub fn decrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
+pub fn decrypt_file(path: &str, key: &str, out_file_path: &str) -> Option<String> {
     if let Ok(mut f) = File::open(path) {
         if let Ok(metadata) = fs::metadata(path) {
             let mut buffer = vec![0; metadata.len() as usize];
@@ -81,7 +81,7 @@ pub fn decrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
             if f.read(&mut buffer).is_ok() {
                 let result_bytes = decrypt_core(&buffer, key);
 
-                if write(out_file, result_bytes).is_ok() {
+                if write(out_file_path, result_bytes).is_ok() {
                     return None;
                 }
                 return Some(String::from("write fail"));

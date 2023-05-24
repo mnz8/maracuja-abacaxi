@@ -76,10 +76,10 @@ pub fn encrypt_string(message: &str, key: &str) -> String {
     String::from("Invalid UTF8")
 }
 
-use std::fs::{self, write, File};
-use std::io::Read;
+use std::fs::{self, write, File, OpenOptions};
+use std::io::{Read, Write};
 
-pub fn encrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
+pub fn encrypt_file(path: &str, key: &str, out_file_path: &str) -> Option<String> {
     if let Ok(mut f) = File::open(path) {
         if let Ok(metadata) = fs::metadata(path) {
             let mut buffer = vec![0; metadata.len() as usize];
@@ -87,7 +87,7 @@ pub fn encrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
             if f.read(&mut buffer).is_ok() {
                 let result_bytes = encrypt_core(&buffer, key);
 
-                if write(out_file, result_bytes).is_ok() {
+                if write(out_file_path, result_bytes).is_ok() {
                     return None;
                 }
                 return Some(String::from("write fail"));
@@ -97,4 +97,39 @@ pub fn encrypt_file(path: &str, key: &str, out_file: &str) -> Option<String> {
         return Some(String::from("unable to read metadata"));
     }
     Some(String::from("no file found"))
+}
+
+use super::BYTE_BLOCK_SIZE;
+
+pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
+    let metadata = fs::metadata(path).unwrap();
+    println!("{}", metadata.len());
+
+    let mut byte_block: [u8; BYTE_BLOCK_SIZE] = [0; BYTE_BLOCK_SIZE];
+    let mut in_file = std::fs::File::open(path).unwrap();
+
+    let mut run_times = 0;
+
+    let mut out_file = OpenOptions::new().read(true).write(true).create(true).open(out_file_path).unwrap();
+
+    loop {
+        let size = in_file.read(&mut byte_block).unwrap();
+
+        // println!("读取字节{}个", &size);
+        // println!("{:02x?}", byte_block);
+
+        run_times += 1;
+        if size < BYTE_BLOCK_SIZE {
+            // println!("最后读取字节{}个", &size);
+            let result_bytes = encrypt_core(&byte_block[..size], key);
+            out_file.write(&result_bytes).unwrap();
+            break;
+        } else if size == 0 {
+            break;
+        } else {
+            let result_bytes = encrypt_core(&byte_block, key);
+            out_file.write(&result_bytes).unwrap();
+        }
+    }
+    println!("总共进行了{}次读写", run_times);
 }

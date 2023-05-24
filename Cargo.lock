@@ -63,7 +63,6 @@ dependencies = [
  "base64 0.21.0",
  "chrono",
  "rust-crypto",
- "same-file",
  "serde",
  "serde_json",
  "tauri",

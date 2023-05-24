@@ -21,7 +21,6 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.3.0", features = ["dialog-open", "dialog-save"] }
 base64 = "0.21.0"
 rust-crypto = "0.2.36"
-same-file = "1.0.6"
 chrono = "0.4.24"
 
 [features]
@@ -37,3 +36,7 @@ path = "src-tauri/main.rs"
 [lib]
 name = "cipher"
 path = "src-tauri/lib.rs"
+
+[[example]]
+name = "a"
+path = "examples/a.rs"
