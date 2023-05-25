@@ -87,6 +87,7 @@
 <style>
 	.container {
 		margin-top: 50px;
+		padding: 0 20px;
 	}
 	.row {
 		margin-top: 20px;

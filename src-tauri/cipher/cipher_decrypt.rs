@@ -70,8 +70,8 @@ pub fn decrypt_string(message: &str, key: &str) -> String {
     String::from("decrypt error, code 4")
 }
 
-use std::fs::{self, write, File};
-use std::io::Read;
+use std::fs::{self, write, File, OpenOptions};
+use std::io::{Read, Write};
 
 pub fn decrypt_file(path: &str, key: &str, out_file_path: &str) -> Option<String> {
     if let Ok(mut f) = File::open(path) {
@@ -91,4 +91,44 @@ pub fn decrypt_file(path: &str, key: &str, out_file_path: &str) -> Option<String
         return Some(String::from("unable to read metadata"));
     }
     Some(String::from("no file found"))
+}
+
+use super::BYTE_BLOCK_SIZE;
+
+pub fn split_decrypt_file(path: &str, key: &str, out_file_path: &str) {
+    let metadata = fs::metadata(path).unwrap();
+    println!("总字节：{}", metadata.len());
+
+    let mut byte_block = vec![0; BYTE_BLOCK_SIZE];
+    let mut in_file = std::fs::File::open(path).unwrap();
+
+    let mut run_times = 0;
+
+    let mut out_file = OpenOptions::new().read(true).write(true).create(true).open(out_file_path).unwrap();
+
+    loop {
+        let size = in_file.read(&mut byte_block).unwrap();
+
+        println!("读取字节：{} 个", &size);
+        // println!("字节十六进制：{:02x?}", byte_block);
+        // byte_block.iter().for_each(|b| {
+        //     println!("字节二进制：{:#010b}", b);
+        // });
+
+        run_times += 1;
+
+        if size < BYTE_BLOCK_SIZE {
+            println!("最后读取字节 {} 个", &size);
+            let result_bytes = decrypt_core(&byte_block[..size], key);
+            out_file.write(&result_bytes).unwrap();
+            break;
+        } else if size == 0 {
+            break;
+        } else {
+            let result_bytes = decrypt_core(&byte_block, key);
+            out_file.write(&result_bytes).unwrap();
+        }
+    }
+
+    println!("总共进行了 {} 次读写", run_times);
 }

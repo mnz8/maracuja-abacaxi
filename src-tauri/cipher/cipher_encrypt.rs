@@ -103,7 +103,7 @@ use super::BYTE_BLOCK_SIZE;
 
 pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
     let metadata = fs::metadata(path).unwrap();
-    println!("{}", metadata.len());
+    println!("总字节：{}", metadata.len());
 
     let mut byte_block = vec![0; BYTE_BLOCK_SIZE];
     let mut in_file = std::fs::File::open(path).unwrap();
@@ -115,12 +115,16 @@ pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
     loop {
         let size = in_file.read(&mut byte_block).unwrap();
 
-        // println!("读取字节{}个", &size);
-        // println!("{:02x?}", byte_block);
+        println!("读取字节：{} 个", &size);
+        // println!("字节十六进制：{:02x?}", byte_block);
+        // byte_block.iter().for_each(|b| {
+        //     println!("字节二进制：{:#010b}", b);
+        // });
 
         run_times += 1;
+
         if size < BYTE_BLOCK_SIZE {
-            // println!("最后读取字节{}个", &size);
+            println!("最后读取字节 {} 个", &size);
             let result_bytes = encrypt_core(&byte_block[..size], key);
             out_file.write(&result_bytes).unwrap();
             break;
@@ -131,5 +135,6 @@ pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
             out_file.write(&result_bytes).unwrap();
         }
     }
-    println!("总共进行了{}次读写", run_times);
+
+    println!("总共进行了 {} 次读写", run_times);
 }
