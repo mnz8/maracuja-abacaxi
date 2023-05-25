@@ -17,5 +17,5 @@ pub mod tool;
 
 pub use tool::get_now;
 
-// 32
-pub const BYTE_BLOCK_SIZE: usize = 1024 * 1024;
+// 32 M
+pub const BYTE_BLOCK_SIZE: usize = 32 * 1024 * 1024;

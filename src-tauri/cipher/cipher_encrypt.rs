@@ -105,7 +105,7 @@ pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
     let metadata = fs::metadata(path).unwrap();
     println!("{}", metadata.len());
 
-    let mut byte_block: [u8; BYTE_BLOCK_SIZE] = [0; BYTE_BLOCK_SIZE];
+    let mut byte_block = vec![0; BYTE_BLOCK_SIZE];
     let mut in_file = std::fs::File::open(path).unwrap();
 
     let mut run_times = 0;
