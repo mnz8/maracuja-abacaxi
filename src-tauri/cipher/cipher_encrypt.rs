@@ -143,14 +143,14 @@ pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
             println!("最后读取字节 {} 个", &size);
             let result_bytes = encrypt_core(&byte_block[..size], key);
             println!("加密字节：{} 个", &result_bytes.len());
-            out_file.write(&result_bytes).unwrap();
+            out_file.write_all(&result_bytes).unwrap();
             break;
         } else if size == 0 {
             break;
         } else {
             let result_bytes = encrypt_core(&byte_block, key);
             println!("加密字节：{} 个", &result_bytes.len());
-            out_file.write(&result_bytes).unwrap();
+            out_file.write_all(&result_bytes).unwrap();
         }
     }
 

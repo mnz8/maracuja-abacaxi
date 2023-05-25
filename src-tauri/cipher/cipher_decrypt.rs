@@ -123,14 +123,14 @@ pub fn split_decrypt_file(path: &str, key: &str, out_file_path: &str) {
             println!("最后读取字节 {} 个", &size);
             let result_bytes = decrypt_core(&byte_block[..size], key);
             println!("解密字节：{} 个", &result_bytes.len());
-            out_file.write(&result_bytes).unwrap();
+            out_file.write_all(&result_bytes).unwrap();
             break;
         } else if size == 0 {
             break;
         } else {
             let result_bytes = decrypt_core(&byte_block, key);
             println!("解密字节：{} 个", &result_bytes.len());
-            out_file.write(&result_bytes).unwrap();
+            out_file.write_all(&result_bytes).unwrap();
         }
     }
 
@@ -139,6 +139,10 @@ pub fn split_decrypt_file(path: &str, key: &str, out_file_path: &str) {
 
 fn calculate_decrypt_block_size(x: usize) -> usize {
     let y = (x / 16) * 16 + 16;
-    let z = if y % 3 == 0 { y / 3 * 4 } else { (y / 3) * 4 + 4 };
-    return z;
+
+    if y % 3 == 0 {
+        (y / 3) * 4
+    } else {
+        (y / 3) * 4 + 4
+    }
 }
