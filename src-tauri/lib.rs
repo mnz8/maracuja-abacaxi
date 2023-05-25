@@ -18,5 +18,7 @@ pub mod tool;
 
 pub use tool::get_now;
 
-// 字节数 1 M
+// 字节数
+// 最好保持 16 的整数倍；因为 base64 存在算法中，所以即使保持 16 的整数倍，也是会增加加密后的数据长度。
+//  1 M
 pub const BYTE_BLOCK_SIZE: usize = 1024 * 1024;

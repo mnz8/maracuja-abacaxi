@@ -96,10 +96,12 @@ pub fn decrypt_file(path: &str, key: &str, out_file_path: &str) -> Option<String
 use super::BYTE_BLOCK_SIZE;
 
 pub fn split_decrypt_file(path: &str, key: &str, out_file_path: &str) {
+    let decrypt_byte_block_size = calculate_decrypt_block_size(BYTE_BLOCK_SIZE);
+
     let metadata = fs::metadata(path).unwrap();
     println!("总字节：{}", metadata.len());
 
-    let mut byte_block = vec![0; BYTE_BLOCK_SIZE];
+    let mut byte_block = vec![0; decrypt_byte_block_size];
     let mut in_file = std::fs::File::open(path).unwrap();
 
     let mut run_times = 0;
@@ -117,18 +119,26 @@ pub fn split_decrypt_file(path: &str, key: &str, out_file_path: &str) {
 
         run_times += 1;
 
-        if size < BYTE_BLOCK_SIZE {
+        if size < decrypt_byte_block_size {
             println!("最后读取字节 {} 个", &size);
             let result_bytes = decrypt_core(&byte_block[..size], key);
+            println!("解密字节：{} 个", &result_bytes.len());
             out_file.write(&result_bytes).unwrap();
             break;
         } else if size == 0 {
             break;
         } else {
             let result_bytes = decrypt_core(&byte_block, key);
+            println!("解密字节：{} 个", &result_bytes.len());
             out_file.write(&result_bytes).unwrap();
         }
     }
 
     println!("总共进行了 {} 次读写", run_times);
+}
+
+fn calculate_decrypt_block_size(x: usize) -> usize {
+    let y = (x / 16) * 16 + 16;
+    let z = if y % 3 == 0 { y / 3 * 4 } else { (y / 3) * 4 + 4 };
+    return z;
 }

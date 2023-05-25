@@ -55,14 +55,30 @@ pub fn encrypt_core(message: &[u8], key: &str) -> Vec<u8> {
         Err(_error) => return String::from("decrypt error, code 3").into_bytes(),
     };
 
+    // example: encrypted_data.len() = 32
+    // println!("encrypted_data {} 个", &encrypted_data.len());
+
     let mut ciphertext_base64_bytes = Vec::new();
+
+    // println!("{}", 32 / 3 * 4 + 4); // base64 后的实际长度
+    // println!("{}", 32 * 4 / 3 + 4);
+
     // make sure we'll have a slice big enough for base64 + padding
     ciphertext_base64_bytes.resize(encrypted_data.len() * 4 / 3 + 4, 0);
 
+    // example: 46
+    // println!("ciphertext_base64_bytes {} 个", &ciphertext_base64_bytes.len());
+
     let bytes_written = general_purpose::STANDARD.encode_slice(encrypted_data, &mut ciphertext_base64_bytes).unwrap();
+
+    // example: 44
+    // println!("bytes_written {} 个", bytes_written);
 
     // shorten our vec down to just what was written
     ciphertext_base64_bytes.truncate(bytes_written);
+
+    // example: 44
+    // println!("ciphertext_base64_bytes truncated {} 个", &ciphertext_base64_bytes.len());
 
     ciphertext_base64_bytes
 }
@@ -126,12 +142,14 @@ pub fn split_encrypt_file(path: &str, key: &str, out_file_path: &str) {
         if size < BYTE_BLOCK_SIZE {
             println!("最后读取字节 {} 个", &size);
             let result_bytes = encrypt_core(&byte_block[..size], key);
+            println!("加密字节：{} 个", &result_bytes.len());
             out_file.write(&result_bytes).unwrap();
             break;
         } else if size == 0 {
             break;
         } else {
             let result_bytes = encrypt_core(&byte_block, key);
+            println!("加密字节：{} 个", &result_bytes.len());
             out_file.write(&result_bytes).unwrap();
         }
     }
