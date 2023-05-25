@@ -8,7 +8,7 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-use cipher::{decrypt_file, encrypt_file, get_now};
+use cipher::{get_now, split_decrypt_file, split_encrypt_file};
 use std::path::Path;
 
 #[tauri::command]
@@ -56,7 +56,7 @@ fn encrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
                 complete_path.push_str(&complete_path_str);
             };
 
-            encrypt_file(file_path, "123", &complete_path);
+            split_encrypt_file(file_path, "123", &complete_path);
         }
     }
 
@@ -106,7 +106,7 @@ fn decrypt_files(files: Option<Vec<String>>, folder: Option<String>) -> String {
                 complete_path.push_str(&complete_path_str);
             };
 
-            decrypt_file(file_path, "123", &complete_path);
+            split_decrypt_file(file_path, "123", &complete_path);
         }
     }
 
